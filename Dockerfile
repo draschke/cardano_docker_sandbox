@@ -27,15 +27,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 # Update and upgrade Ubuntu software repository and install various packages
 # from ubuntu repository
-RUN apt-get update && apt upgrade -y
-
-# Install various system-level packages from ubuntu repository
-RUN apt-get install -y automake build-essential pkg-config make g++ tmux git \
- && apt-get install -y jq wget libtool autoconf curl
-
-# Install various lib packages from ubuntu repository
-RUN apt-get install -y libffi-dev libgmp-dev libssl-dev libtinfo-dev \
- && apt-get install -y libsystemd-dev zlib1g-dev libncursesw5 
+RUN apt-get update && apt upgrade -y \
+    # Install various system-level packages from ubuntu repository
+    && apt-get install -y automake build-essential pkg-config make g++ tmux git \
+    && apt-get install -y jq wget libtool autoconf curl \
+    # Install various lib packages from ubuntu repository
+    && apt-get install -y libffi-dev libgmp-dev libssl-dev libtinfo-dev \
+    && apt-get install -y libsystemd-dev zlib1g-dev libncursesw5 
 
 # Install GHC and Cabal
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org -sSf | sh -s -- -y
@@ -48,10 +46,9 @@ RUN ghcup install ghc 8.10.4
 RUN ghcup set ghc 8.10.4
 
 # Make a Cardano source code directory
-RUN mkdir -p ~/cardano-src
-
-# Download and install libsodium
-RUN cd ~/cardano-src && git clone https://github.com/input-output-hk/libsodium \
+RUN mkdir -p ~/cardano-src \
+    # Download and install libsodium
+    && cd ~/cardano-src && git clone https://github.com/input-output-hk/libsodium \
     && cd libsodium && git checkout 66f017f1 && ./autogen.sh && ./configure \
     && make && make install
 
@@ -63,40 +60,34 @@ ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 # Download cardano-node
 RUN cd ~/cardano-src && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node && git fetch --all --recurse-submodules --tags \
-    && git checkout tags/1.29.0
-
-# Configure cardano-node
-RUN cd ~/cardano-src/cardano-node && cabal configure --with-compiler=ghc-8.10.4 \
+    && git checkout tags/1.29.0 \
+    # Configure cardano-node
+    && cd ~/cardano-src/cardano-node && cabal configure --with-compiler=ghc-8.10.4 \
     && echo "package cardano-crypto-praos" >>  cabal.project.local \
-    && echo "  flags: -external-libsodium-vrf" >>  cabal.project.local
-
-# Build  cardano-node
-RUN cd ~/cardano-src/cardano-node && cabal build all
-
-# Install cardano-node
-RUN mkdir -p ~/.local/bin && cd ~/cardano-src/cardano-node \
+    && echo "  flags: -external-libsodium-vrf" >>  cabal.project.local \
+    # Build  cardano-node
+    && cd ~/cardano-src/cardano-node && cabal build all \
+    # Install cardano-node
+    && mkdir -p ~/.local/bin && cd ~/cardano-src/cardano-node \
     && cp -p "$(./scripts/bin-path.sh cardano-node)" ~/.local/bin/ \
     && cp -p "$(./scripts/bin-path.sh cardano-cli)" ~/.local/bin/
 
 # Download cardano-wallet
 RUN cd ~/cardano-src && git clone https://github.com/input-output-hk/cardano-wallet.git \
     && cd cardano-wallet && git fetch --all --recurse-submodules --tags \
-    && git checkout tags/v2021-09-09
-
-# Configure cardano-wallet
-# Note: Instructions from https://developers.cardano.org/docs/get-started/installing-cardano-wallet
-# say to use: cabal configure --with-compiler=ghc-8.10.4 --constraint="random<1.2"
-# but this fails to build. Running it without the --constraint="random<1.2" makes it work.
-# refer to issue: https://github.com/input-output-hk/cardano-wallet/issues/2824
-RUN cd ~/cardano-src/cardano-wallet \
-    && cabal configure --with-compiler=ghc-8.10.4
-
-# Build  cardano-wallet
-RUN cd ~/cardano-src/cardano-wallet && cabal build all
-
-# Install cardano-wallet
-RUN cp -p ~/cardano-src/cardano-wallet/dist-newstyle/build/x86_64-linux/ghc-8.10.4/\
-cardano-wallet-2021.9.9/x/cardano-wallet/build/cardano-wallet/cardano-wallet ~/.local/bin/
+    && git checkout tags/v2021-09-09 \
+    # Configure cardano-wallet
+    # Note: Instructions from https://developers.cardano.org/docs/get-started/installing-cardano-wallet
+    # say to use: cabal configure --with-compiler=ghc-8.10.4 --constraint="random<1.2"
+    # but this fails to build. Running it without the --constraint="random<1.2" makes it work.
+    # refer to issue: https://github.com/input-output-hk/cardano-wallet/issues/2824
+    && cd ~/cardano-src/cardano-wallet \
+    && cabal configure --with-compiler=ghc-8.10.4 \
+    # Build  cardano-wallet
+    && cd ~/cardano-src/cardano-wallet && cabal build all \
+    # Install cardano-wallet
+    && cp -p ~/cardano-src/cardano-wallet/dist-newstyle/build/x86_64-linux/ghc-8.10.4/\
+    cardano-wallet-2021.9.9/x/cardano-wallet/build/cardano-wallet/cardano-wallet ~/.local/bin/
 
 # Add ~/.local/bin to PATH so system can find cardano-node, cardano-cli, and
 # cardano-wallet
