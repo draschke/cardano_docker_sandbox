@@ -7,7 +7,7 @@ services:
     volumes: # Volumes to mount
       # Syntax: /host/path:/container/path  # Bind moun
       # - /workspaces/cardano_docker_sandbox2/shared:/mnt/shared
-      - /${PWD}/shared/:/mnt/shared
-      # - ./shared/:/mnt/shared
+      # - /${PWD}/shared/:/mnt/shared
+      - ./shared/:/mnt/shared
     network_mode: "bridge" # Network mode for service
     command: [/root/scripts/cardano_node/run_cardano_node_testnet.sh] # Script to run when container spins up
