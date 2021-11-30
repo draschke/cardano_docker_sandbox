@@ -1,0 +1,21 @@
+// First, remove the old version:
+
+//STEP- 1
+// If installed via apt-get
+sudo apt-get remove docker-compose
+// If installed via curl
+sudo rm /usr/local/bin/docker-compose
+//If installed via pip
+pip uninstall docker-compose
+
+// STEP-2 GET LATEST VERSION
+// curl + grep
+VERSION=$(curl --silent https://api.github.com/repos/docker/compose/releases/latest | grep -Po '"tag_name": "\K.*\d')
+
+// FINAL_STEP Install and make it executeable
+DESTINATION=/usr/local/bin/docker-compose
+sudo curl -L https://github.com/docker/compose/releases/download/${VERSION}/docker-compose-$(uname -s)-$(uname -m) -o $DESTINATION
+sudo chmod 755 $DESTINATION
+
+// for docker-compose 3.9 
+// https://docs.docker.com/compose/compose-file/compose-file-v3/#resources

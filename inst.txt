@@ -1,8 +1,49 @@
-docker run \
-  --config $CARDANO_CONFIG_PATH/testnet-config.json \
-  --volume /${PWD}/shared/:/mnt/shared \
-  --database-path $CARDANO_DB_PATH \
-  --socket-path $CARDANO_DB_PATH/node.socket \
-  --host-addr 172.17.0.2 \
-  --port 1337
-  --topology $CARDANO_CONFIG_PATH/testnet-topology.json > /root/cardano_node_data/node.log 2>&1 &
+
+sudo setfacl --modify user:$USER:rw /var/run/docker.sock
+
+
+Set the tag
+============
+cardano_sandbox_img:latest (82e7e645dad3)
+docker image tag 82e7e645dad3 draschke/cardano_sandbox_img2:latest
+https://docs.docker.com/docker-hub/repos/
+
+Push the image to Docker Hub
+========================
+docker logout (if there is an issue with the push)
+docker login 
+docker push draschke/cardano_sandbox_img:latest
+
+docker run --rm -v /shared:/mnt/shared -it  draschke/cardano_sandbox_img2:latest
+
+sudo chmod 777 -R shared/
+sudo chown root:root -R shared/
+sudo chown node:root -R shared/
+/usr/local/bin/docker-entrypoint.sh: line 9: /root/scripts/cardano_node/run_cardano_node_testnet.sh: No such file or directory
+
+apt-get install acl
+user:BILLYJC:+rw 
+sudo setfacl --modify user:node:+rw /shared
+
+sudo setfacl --modify user:root:rw shared
+
+
+cardano_docker_sandbox_node_1
+docker-compose up --force-recreate cardano_docker_sandbox_node_1
+
+
+node ➜ /workspaces/cardano_docker_sandbox2 (main ✗) $ docker volume create shared
+shared
+node ➜ /workspaces/cardano_docker_sandbox2 (main ✗) $ docker volume inspect shared
+[
+    {
+        "CreatedAt": "2021-11-29T12:19:21Z",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/shared/_data",
+        "Name": "shared",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+
